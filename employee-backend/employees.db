@@ -1,0 +1,19 @@
+{"code":"EMP01","name":"Aarav Sharma","email":"aarav.sharma@example.com","department":"Engineering","designation":"Software Engineer","salary":650000,"_id":"id_emp_001"}
+{"code":"EMP02","name":"Priya Patel","email":"priya.patel@example.com","department":"HR","designation":"HR Manager","salary":550000,"_id":"id_emp_002"}
+{"code":"EMP03","name":"Rohan Verma","email":"rohan.verma@example.com","department":"Finance","designation":"Financial Analyst","salary":500000,"_id":"id_emp_003"}
+{"code":"EMP04","name":"Ananya Sen","email":"ananya.sen@example.com","department":"Marketing","designation":"Marketing Specialist","salary":480000,"_id":"id_emp_004"}
+{"code":"EMP05","name":"Vikram Singh","email":"vikram.singh@example.com","department":"Engineering","designation":"DevOps Engineer","salary":720000,"_id":"id_emp_005"}
+{"code":"EMP06","name":"Neha Gupta","email":"neha.gupta@example.com","department":"IT","designation":"System Administrator","salary":420000,"_id":"id_emp_006"}
+{"code":"EMP07","name":"Karan Mehta","email":"karan.mehta@example.com","department":"Sales","designation":"Sales Executive","salary":380000,"_id":"id_emp_007"}
+{"code":"EMP08","name":"Sneha Reddy","email":"sneha.reddy@example.com","department":"Design","designation":"UI/UX Designer","salary":580000,"_id":"id_emp_008"}
+{"code":"EMP09","name":"Amit Kumar","email":"amit.kumar@example.com","department":"Engineering","designation":"Frontend Developer","salary":600000,"_id":"id_emp_009"}
+{"code":"EMP10","name":"Pooja Nair","email":"pooja.nair@example.com","department":"QA","designation":"QA Lead","salary":520000,"_id":"id_emp_010"}
+{"code":"EMP11","name":"Siddharth Joshi","email":"siddharth.joshi@example.com","department":"Product","designation":"Product Manager","salary":850000,"_id":"id_emp_011"}
+{"code":"EMP12","name":"Riya Kapoor","email":"riya.kapoor@example.com","department":"HR","designation":"Recruiter","salary":400000,"_id":"id_emp_012"}
+{"code":"EMP13","name":"Aditya Rao","email":"aditya.rao@example.com","department":"Engineering","designation":"Backend Developer","salary":680000,"_id":"id_emp_013"}
+{"code":"EMP14","name":"Kavya Iyer","email":"kavya.iyer@example.com","department":"Finance","designation":"Accountant","salary":450000,"_id":"id_emp_014"}
+{"code":"EMP15","name":"Manish Tiwari","email":"manish.tiwari@example.com","department":"Sales","designation":"Regional Manager","salary":750000,"_id":"id_emp_015"}
+{"code":"EMP16","name":"Divya Saxena","email":"divya.saxena@example.com","department":"Marketing","designation":"Content Writer","salary":350000,"_id":"id_emp_016"}
+{"code":"EMP17","name":"Gaurav Bhatia","email":"gaurav.bhatia@example.com","department":"Engineering","designation":"Data Engineer","salary":700000,"_id":"id_emp_017"}
+{"code":"EMP18","name":"Shweta Mishra","email":"shweta.mishra@example.com","department":"Support","designation":"Support Lead","salary":380000,"_id":"id_emp_018"}
+{"code":"EMP19","name":"Varun Deshmukh","email":"varun.deshmukh@example.com","department":"IT","designation":"Cloud Architect","salary":950000,"_id":"id_emp_019"}

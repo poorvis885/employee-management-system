@@ -1,0 +1,12 @@
+2026-08-09 17:56:42.801234+05:30 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "EMPLOYEES" not found (this database is empty); SQL statement:
+select e1_0.id,e1_0.department,e1_0.designation,e1_0.email,e1_0.emp_code,e1_0.first_name,e1_0.joining_date,e1_0.last_name,e1_0.salary,e1_0.status from employees e1_0 [42104-240]
+2026-08-09 18:20:28.304388+05:30 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "EMPLOYEES" not found (this database is empty); SQL statement:
+select e1_0.id,e1_0.department,e1_0.designation,e1_0.email,e1_0.emp_code,e1_0.first_name,e1_0.joining_date,e1_0.last_name,e1_0.salary,e1_0.status from employees e1_0 [42104-240]
+2026-08-09 19:45:08.229730+05:30 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "EMPLOYEES" not found (this database is empty); SQL statement:
+select e1_0.id,e1_0.department,e1_0.designation,e1_0.email,e1_0.emp_code,e1_0.first_name,e1_0.joining_date,e1_0.last_name,e1_0.salary,e1_0.status from employees e1_0 [42104-240]
+2026-08-09 19:45:15.510687+05:30 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "EMPLOYEES" not found (this database is empty); SQL statement:
+select e1_0.id,e1_0.department,e1_0.designation,e1_0.email,e1_0.emp_code,e1_0.first_name,e1_0.joining_date,e1_0.last_name,e1_0.salary,e1_0.status from employees e1_0 [42104-240]
