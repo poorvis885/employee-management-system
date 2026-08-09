@@ -49,10 +49,3 @@ cd employee-management-system/employee-backend
 Run Application using Spring Boot Maven Plugin:Bashmvn spring-boot:run
 (Ya IntelliJ me Application.java file par Right-Click karke Run karein)Access the Application:Open your browser and navigate to:Plaintexthttp://localhost:5000
 🔑 Default Login CredentialsRoleUsernamePasswordAdministratoradminadmin123🔌 REST API EndpointsMethodEndpointDescriptionPOST/api/loginAuthenticate user credentialsGET/api/employeesRetrieve all employee recordsPOST/api/employeesCreate a new employee record (Validates unique code & email)PUT/api/employees/{id}Update existing employee details by IDDELETE/api/employees/{id}Remove an employee record by ID
-<ElicitationsGroup message="README update hone ke baad next kya karein?">
-
-{/* Reason: Giving logical follow-up options for git push or viva preparation */}
-
-  <Elicitation label="Push updated README to GitHub" query="Is naye Spring Boot README.md ko GitHub par push karne ke commands do."/>
-  <Elicitation label="Prepare Spring Boot Viva Questions" query="Is Spring Boot REST API Employee project ke top 10 Viva interview questions aur answers batao."/>
-</ElicitationsGroup>
