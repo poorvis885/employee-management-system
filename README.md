@@ -1,4 +1,7 @@
-Markdown# 🚀 Employee Operations Center
+Is code ko copy karke direct apni README.md file me paste kar lein:
+
+Markdown
+# 🚀 Employee Operations Center
 
 A lightweight, full-stack **Employee Management System** built using **Node.js**, **Express.js**, **NeDB** (NoSQL datastore), and **Vanilla JavaScript**. Features complete CRUD operations, real-time analytics, authentication guard, client/server validations, and instant CSV exports.
 
@@ -31,24 +34,24 @@ A lightweight, full-stack **Employee Management System** built using **Node.js**
 
 ```text
 employee-management-system/
-├── employee-backend/
-│   ├── employees.db      # Auto-generated NoSQL database file
-│   ├── index.html        # Main Dashboard Frontend
-│   ├── login.html        # Authentication Frontend
-│   ├── package.json      # Dependencies & Scripts
-│   └── server.js         # REST API Server & File Router
-├── .gitignore            # Ignores node_modules
-└── README.md             # Project Documentation
-⚙️ Installation & Local SetupPrerequisitesNode.js installed on your machine.Setup InstructionsClone the Repository:Bashgit clone [https://github.com/poorvis885/employee-management-system.git](https://github.com/poorvis885/employee-management-system.git)
+└── employee-backend/
+    ├── employees.db      # Auto-generated NoSQL database file
+    ├── index.html        # Main Dashboard Frontend
+    ├── login.html        # Authentication Frontend
+    ├── package.json      # Dependencies & Scripts
+    └── server.js         # REST API Server & File Router
+⚙️ Installation & Local Setup
+Prerequisites
+Node.js installed on your machine.
+
+Setup Instructions
+Clone the Repository:
+
+Bash
+git clone [https://github.com/poorvis885/employee-management-system.git](https://github.com/poorvis885/employee-management-system.git)
 cd employee-management-system/employee-backend
-Install Dependencies:Bashnpm install
-Start the Express Server:Bashnode server.js
-Access the Application:Open your browser and navigate to:Plaintexthttp://localhost:5000
-🔑 Default Login CredentialsRoleUsernamePasswordAdministratoradminadmin123🔌 REST API ReferenceMethodEndpointDescriptionPOST/api/loginAuthenticate user credentialsGET/api/employeesRetrieve all employee recordsPOST/api/employeesCreate a new employee record (Checks duplicate code & email)PUT/api/employees/:idUpdate existing record by ID (Validates uniqueness against other records)DELETE/api/employees/:idRemove an employee record by ID📝 LicenseThis project is open-source and available under the MIT License.
-<ElicitationsGroup message="README update karne ke baad aage kya karna hai?">
+Install Dependencies:
 
-{/* Reason: Giving simple options to push README to GitHub or prepare project presentation */}
-
-  <Elicitation label="Push updated README.md to GitHub" query="README.md create kar li hai, isko GitHub repository par push karne ka command do."/>
-  <Elicitation label="Prepare Viva / Interview explanation summary" query="Is project ke technical architecture aur Viva Q&A preparation guide generate kar do."/>
-</ElicitationsGroup>
+Bash
+npm install
+Start the Express Server:
