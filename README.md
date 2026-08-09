@@ -1,6 +1,3 @@
-Is code ko copy karke direct apni README.md file me paste kar lein:
-
-Markdown
 # 🚀 Employee Operations Center
 
 A lightweight, full-stack **Employee Management System** built using **Node.js**, **Express.js**, **NeDB** (NoSQL datastore), and **Vanilla JavaScript**. Features complete CRUD operations, real-time analytics, authentication guard, client/server validations, and instant CSV exports.
@@ -40,18 +37,16 @@ employee-management-system/
     ├── login.html        # Authentication Frontend
     ├── package.json      # Dependencies & Scripts
     └── server.js         # REST API Server & File Router
-⚙️ Installation & Local Setup
-Prerequisites
-Node.js installed on your machine.
-
-Setup Instructions
-Clone the Repository:
-
-Bash
-git clone [https://github.com/poorvis885/employee-management-system.git](https://github.com/poorvis885/employee-management-system.git)
+⚙️ Installation & Local SetupPrerequisitesNode.js installed on your machine.Setup InstructionsClone the Repository:Bashgit clone [https://github.com/poorvis885/employee-management-system.git](https://github.com/poorvis885/employee-management-system.git)
 cd employee-management-system/employee-backend
-Install Dependencies:
+Install Dependencies:Bashnpm install
+Start the Express Server:Bashnode server.js
+Access the Application:Open your browser and navigate to:Plaintexthttp://localhost:5000
+🔑 Default Login CredentialsRoleUsernamePasswordAdministratoradminadmin123🔌 REST API ReferenceMethodEndpointDescriptionPOST/api/loginAuthenticate user credentialsGET/api/employeesRetrieve all employee recordsPOST/api/employeesCreate a new employee record (Checks duplicate code & email)PUT/api/employees/:idUpdate existing record by ID (Validates uniqueness against other records)DELETE/api/employees/:idRemove an employee record by ID
+<ElicitationsGroup message="README.md paste karne ke baad kya karna hai?">
 
-Bash
-npm install
-Start the Express Server:
+{/* Reason: Providing direct follow-ups to push the file or prepare for viva presentation */}
+
+  <Elicitation label="Push updated README to GitHub" query="README.md paste kar diya hai. Ab terminal commands do push karne ke liye."/>
+  <Elicitation label="Prepare Viva / Demo Explanation Questions" query="Is project ke technical viva questions aur architecture explanation guide generate do."/>
+</ElicitationsGroup>
