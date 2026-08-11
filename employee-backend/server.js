@@ -4,30 +4,36 @@ const path = require('path');
 const fs = require('fs');
 const Datastore = require('nedb-promises');
 
-
 const app = express();
 
 // Middlewares
 app.use(cors());
 app.use(express.json());
-
-// Safely define Spring Boot static resources path if it exists
-const springStaticPath = path.join(__dirname, 'src', 'main', 'resources', 'static');
-
-// Express ko bolo ki jab bhi '/' load ho, 'employee-backend' folder ki index.html hi bheje
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
-// Serve static files (HTML, CSS, JS) from root and static folders
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname));
-if (fs.existsSync(springStaticPath)) {
-    app.use(express.static(springStaticPath));
-}
 
 // Initialize NeDB Database
 const db = Datastore.create({ filename: 'employees.db', autoload: true });
 
-// 1. Root Route: Serve login.html if exists, otherwise index.html
+// Auto-Seed Default Employees if DB is empty (Guarantees live site is never 0)
+async function seedDefaultData() {
+    try {
+        const count = await db.count({});
+        if (count === 0) {
+            await db.insert([
+                { code: 'EMP001', name: 'Rahul Sharma', email: 'rahul@company.com', department: 'Engineering', designation: 'Software Engineer', salary: 65000, createdAt: new Date() },
+                { code: 'EMP002', name: 'Priya Verma', email: 'priya@company.com', department: 'HR', designation: 'HR Specialist', salary: 50000, createdAt: new Date() },
+                { code: 'EMP003', name: 'Aman Gupta', email: 'aman@company.com', department: 'Sales', designation: 'Account Executive', salary: 55000, createdAt: new Date() }
+            ]);
+            console.log('Default initial employees seeded successfully!');
+        }
+    } catch (err) {
+        console.error('Error seeding data:', err);
+    }
+}
+seedDefaultData();
+
+// 1. Static HTML Serving Routes
 app.get('/', (req, res) => {
     const loginPath = path.join(__dirname, 'login.html');
     const indexPath = path.join(__dirname, 'index.html');
@@ -37,62 +43,59 @@ app.get('/', (req, res) => {
     } else if (fs.existsSync(indexPath)) {
         return res.sendFile(indexPath);
     } else {
-        return res.status(404).send(`<h2>❌ Neither login.html nor index.html found in ${__dirname}</h2>`);
+        return res.status(404).send('<h2>❌ Neither login.html nor index.html found</h2>');
     }
 });
 
-// 2. Dashboard Route (/index.html)
 app.get('/index.html', (req, res) => {
     const indexPath = path.join(__dirname, 'index.html');
-    const springIndexPath = path.join(springStaticPath, 'index.html');
-
     if (fs.existsSync(indexPath)) {
         return res.sendFile(indexPath);
-    } else if (fs.existsSync(springIndexPath)) {
-        return res.sendFile(springIndexPath);
-    } else {
-        return res.status(404).send(`<h2>❌ index.html missing in project directory</h2>`);
     }
+    res.status(404).send('<h2>❌ index.html missing</h2>');
 });
 
-// 3. Login API Route (ADMIN & EMPLOYEE Roles)
+// 2. Auth API Route
 app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
 
     if (username === 'admin' && password === 'admin123') {
-        res.json({
-            success: true,
-            message: 'Admin Login successful',
-            user: { username: 'Admin User', role: 'ADMIN' }
-        });
+        res.json({ success: true, message: 'Admin Login successful', user: { username: 'Admin User', role: 'ADMIN' } });
     } else if (username === 'user' && password === 'user123') {
-        res.json({
-            success: true,
-            message: 'Employee Login successful',
-            user: { username: 'Employee / Viewer', role: 'EMPLOYEE' }
-        });
+        res.json({ success: true, message: 'Employee Login successful', user: { username: 'Employee / Viewer', role: 'EMPLOYEE' } });
     } else {
         res.status(401).json({ success: false, message: 'Invalid Username or Password' });
     }
 });
 
-// 4. Employee CRUD API Routes
+// 3. Employee CRUD API Routes
 
-// GET: Fetch all employees
-// Get Single Employee by ID (Used by profile.html)
-// GET Single Employee by ID
-app.get('/api/employees/:id', (req, res) => {
-    const id = req.params.id;
-    const employee = allEmployees.find(e => (e._id === id || e.id === id || e.code === id));
-
-    if (!employee) {
-        return res.status(404).json({ message: "Employee not found" });
+// GET ALL Employees (Fixes Empty Dashboard)
+app.get('/api/employees', async (req, res) => {
+    try {
+        const employees = await db.find({});
+        res.json(employees);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
-    res.json(employee);
 });
 
+// GET Single Employee by ID or Code (Fixes Blank Profile Page)
+app.get('/api/employees/:id', async (req, res) => {
+    try {
+        const id = req.params.id;
+        const employee = await db.findOne({ $or: [{ _id: id }, { code: id }] });
 
-// POST: Add new employee (With duplicate Code & Email checks)
+        if (!employee) {
+            return res.status(404).json({ message: "Employee not found" });
+        }
+        res.json(employee);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// POST Add New Employee
 app.post('/api/employees', async (req, res) => {
     try {
         const { code, name, email, department, designation, salary } = req.body;
@@ -104,7 +107,6 @@ app.post('/api/employees', async (req, res) => {
         const formattedCode = code.trim();
         const formattedEmail = email.trim().toLowerCase();
 
-        // Unique Validation Checks
         const existingCode = await db.findOne({ code: formattedCode });
         if (existingCode) {
             return res.status(400).json({ error: `Employee Code '${formattedCode}' already exists!` });
@@ -131,7 +133,7 @@ app.post('/api/employees', async (req, res) => {
     }
 });
 
-// PUT: Update employee details
+// PUT Update Employee
 app.put('/api/employees/:id', async (req, res) => {
     try {
         const { code, email } = req.body;
@@ -140,12 +142,11 @@ app.put('/api/employees/:id', async (req, res) => {
         const formattedCode = code.trim();
         const formattedEmail = email.trim().toLowerCase();
 
-        // Unique Validation Checks against other IDs
         const existingCode = await db.findOne({ code: formattedCode, _id: { $ne: currentId } });
-        if (existingCode) return res.status(400).json({ error: `Employee Code '${formattedCode}' belongs to another employee!` });
+        if (existingCode) return res.status(400).json({ error: `Employee Code belongs to another employee!` });
 
         const existingEmail = await db.findOne({ email: formattedEmail, _id: { $ne: currentId } });
-        if (existingEmail) return res.status(400).json({ error: `Email '${formattedEmail}' belongs to another employee!` });
+        if (existingEmail) return res.status(400).json({ error: `Email belongs to another employee!` });
 
         await db.update({ _id: currentId }, {
             $set: {
@@ -161,7 +162,7 @@ app.put('/api/employees/:id', async (req, res) => {
     }
 });
 
-// DELETE: Remove employee by ID
+// DELETE Employee
 app.delete('/api/employees/:id', async (req, res) => {
     try {
         await db.remove({ _id: req.params.id });
@@ -170,65 +171,9 @@ app.delete('/api/employees/:id', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
-// Pagination State
-let currentPage = 1;
-let pageSize = 10;
-let currentFilteredData = [];
-function filterData() {
-    const searchTerm = (document.getElementById('searchInput').value || '').toLowerCase();
-    const selectedDept = document.getElementById('deptFilter').value;
-    const minSal = Number(document.getElementById('minSalary').value) || 0;
-    const maxSal = Number(document.getElementById('maxSalary').value) || Infinity;
-    const sortVal = document.getElementById('sortFilter').value;
 
-    // 1. Filtering
-    let filtered = allEmployees.filter(emp => {
-        const matchSearch = (emp.name || '').toLowerCase().includes(searchTerm) ||
-            (emp.code || '').toLowerCase().includes(searchTerm) ||
-            (emp.designation || '').toLowerCase().includes(searchTerm) ||
-            (emp.email || '').toLowerCase().includes(searchTerm);
-
-        const matchDept = selectedDept === '' || emp.department === selectedDept;
-        const sal = Number(emp.salary) || 0;
-        const matchSalary = sal >= minSal && sal <= maxSal;
-
-        return matchSearch && matchDept && matchSalary;
-    });
-
-    // 2. Sorting
-    const [field, dir] = sortVal.split('-');
-    currentSortState = { field, dir };
-    updateSortIcons(field, dir);
-
-    filtered.sort((a, b) => {
-        let valA = a[field] ?? '';
-        let valB = b[field] ?? '';
-
-        if (field === 'salary') {
-            valA = Number(valA) || 0;
-            valB = Number(valB) || 0;
-        } else {
-            valA = valA.toString().toLowerCase();
-            valB = valB.toString().toLowerCase();
-        }
-
-        if (valA < valB) return dir === 'asc' ? -1 : 1;
-        if (valA > valB) return dir === 'asc' ? 1 : -1;
-        return 0;
-    });
-
-    // Store global reference & reset to page 1 on filter change
-    currentFilteredData = filtered;
-    currentPage = 1;
-
-    renderStats(filtered);
-    renderCharts(filtered);
-    updatePaginatedTable();
-}
-
-// Render environment port support (Default: 5000)
+// Server Start
 const PORT = process.env.PORT || 5000;
-
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
