@@ -79,13 +79,17 @@ app.post('/api/login', (req, res) => {
 // 4. Employee CRUD API Routes
 
 // GET: Fetch all employees
-app.get('/api/employees', async (req, res) => {
-    try {
-        const employees = await db.find({});
-        res.json(employees);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+// Get Single Employee by ID (Used by profile.html)
+app.get('/api/employees/:id', (req, res) => {
+    const id = req.params.id;
+
+    // SQLite query example (agar SQLite / NeDB use kar rahe hain)
+    db.findOne({ _id: id }, (err, doc) => {
+        if (err || !doc) {
+            return res.status(404).json({ message: "Employee not found" });
+        }
+        res.json(doc);
+    });
 });
 
 // POST: Add new employee (With duplicate Code & Email checks)
