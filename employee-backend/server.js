@@ -80,17 +80,17 @@ app.post('/api/login', (req, res) => {
 
 // GET: Fetch all employees
 // Get Single Employee by ID (Used by profile.html)
+// GET Single Employee by ID
 app.get('/api/employees/:id', (req, res) => {
     const id = req.params.id;
+    const employee = allEmployees.find(e => (e._id === id || e.id === id || e.code === id));
 
-    // SQLite query example (agar SQLite / NeDB use kar rahe hain)
-    db.findOne({ _id: id }, (err, doc) => {
-        if (err || !doc) {
-            return res.status(404).json({ message: "Employee not found" });
-        }
-        res.json(doc);
-    });
+    if (!employee) {
+        return res.status(404).json({ message: "Employee not found" });
+    }
+    res.json(employee);
 });
+
 
 // POST: Add new employee (With duplicate Code & Email checks)
 app.post('/api/employees', async (req, res) => {
