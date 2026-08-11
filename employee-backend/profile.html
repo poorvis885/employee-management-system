@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee 360° Profile</title>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --primary: #4f46e5; --bg: #f8fafc; --surface: #ffffff; --text: #0f172a; --muted: #64748b; --border: #e2e8f0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: var(--bg); color: var(--text); padding: 24px; }
+        .container { max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+
+        .back-btn { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; color: var(--primary); font-weight: 600; font-size: 14px; background: #e0e7ff; padding: 8px 16px; border-radius: 8px; width: fit-content; }
+        .back-btn:hover { background: #c7d2fe; }
+
+        .profile-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; display: flex; align-items: center; gap: 20px; }
+        .avatar { width: 72px; height: 72px; border-radius: 50%; background: #e0e7ff; color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 700; border: 2px solid var(--primary); }
+        .info h2 { font-size: 22px; font-weight: 700; }
+        .info p { color: var(--muted); font-size: 14px; margin-top: 4px; }
+        .badge { display: inline-block; padding: 4px 10px; background: #e0e7ff; color: #3730a3; font-size: 12px; font-weight: 600; border-radius: 6px; margin-top: 8px; }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+        .card h3 { font-size: 15px; color: var(--muted); text-transform: uppercase; margin-bottom: 12px; }
+
+        .detail-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed var(--border); font-size: 14px; }
+        .detail-item:last-child { border-bottom: none; }
+        .detail-label { color: var(--muted); }
+        .detail-value { font-weight: 600; }
+
+        canvas { max-height: 220px !important; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <a href="index.html" class="back-btn">❮ Back to Dashboard</a>
+
+    <!-- Header Card -->
+    <div class="profile-card">
+        <div class="avatar" id="empInitials">--</div>
+        <div class="info">
+            <h2 id="empName">Loading Profile...</h2>
+            <p id="empCode">ID: --</p>
+            <span class="badge" id="empDept">Department</span>
+        </div>
+    </div>
+
+    <!-- Overview Details Grid -->
+    <div class="grid">
+        <div class="card">
+            <h3>Employee Details</h3>
+            <div class="detail-item"><span class="detail-label">Designation</span><span class="detail-value" id="empDesignation">--</span></div>
+            <div class="detail-item"><span class="detail-label">Email</span><span class="detail-value" id="empEmail">--</span></div>
+            <div class="detail-item"><span class="detail-label">Annual CTC</span><span class="detail-value" id="empSalary">--</span></div>
+            <div class="detail-item"><span class="detail-label">Employment Status</span><span class="detail-value" style="color:#059669;">Active</span></div>
+        </div>
+
+        <div class="card">
+            <h3>Salary vs Dept Average</h3>
+            <canvas id="salaryBenchmarkChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_URL = 'http://localhost:5000/api/employees';
+
+    // Get Employee ID from URL parameter (?id=...)
+    const urlParams = new URLSearchParams(window.location.search);
+    const empId = urlParams.get('id');
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        if (!empId) {
+            alert('No Employee ID specified!');
+            window.location.href = 'index.html';
+            return;
+        }
+
+        try {
+            const res = await fetch(API_URL);
+            const allEmployees = await res.json();
+            const emp = allEmployees.find(e => e._id === empId);
+
+            if (!emp) {
+                alert('Employee not found!');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Fill Employee Details
+            document.getElementById('empName').innerText = emp.name;
+            document.getElementById('empCode').innerText = `Code: ${emp.code}`;
+            document.getElementById('empDept').innerText = emp.department;
+            document.getElementById('empDesignation').innerText = emp.designation;
+            document.getElementById('empEmail').innerText = emp.email;
+            document.getElementById('empSalary').innerText = '₹' + Number(emp.salary).toLocaleString('en-IN');
+
+            const initials = emp.name ? emp.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'EM';
+            document.getElementById('empInitials').innerText = initials;
+
+            // Compute Department Salary Benchmark
+            const sameDeptEmps = allEmployees.filter(e => e.department === emp.department);
+            const avgDeptSalary = sameDeptEmps.reduce((acc, curr) => acc + Number(curr.salary || 0), 0) / (sameDeptEmps.length || 1);
+
+            // Render Benchmark Chart
+            const ctx = document.getElementById('salaryBenchmarkChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [emp.name.split(' ')[0], `${emp.department} Avg`],
+                    datasets: [{
+                        label: 'Salary Comparison (₹)',
+                        data: [Number(emp.salary), avgDeptSalary],
+                        backgroundColor: ['#4f46e5', '#94a3b8'],
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+
+        } catch (err) {
+            console.error('Error fetching employee details:', err);
+        }
+    });
+</script>
+
+</body>
+</html>

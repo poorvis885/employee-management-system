@@ -4,11 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Operations Center</title>
-    <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
-        // 🔒 1. Instant Role & Auth Check
         if (localStorage.getItem('isLoggedIn') !== 'true') {
             window.location.href = 'login.html';
         }
@@ -22,55 +20,91 @@
     </script>
 
     <style>
-        :root { --primary: #4f46e5; --bg: #f8fafc; --surface: #ffffff; --text: #0f172a; --muted: #64748b; --border: #e2e8f0; --danger: #ef4444; }
+        :root {
+            --primary: #4f46e5;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text: #0f172a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --danger: #ef4444;
+            --input-bg: #ffffff;
+            --table-header: #f8fafc;
+        }
+
+        /* 1. 🌙 Dark Mode Variables */
+        [data-theme="dark"] {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --border: #334155;
+            --input-bg: #0f172a;
+            --table-header: #334155;
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: var(--bg); color: var(--text); padding: 24px; }
+        body { background-color: var(--bg); color: var(--text); padding: 24px; transition: background-color 0.3s, color 0.3s; }
         .app-container { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
 
-        /* Canvas Enforced Height for Charts */
         canvas { display: block !important; width: 100% !important; max-height: 250px !important; }
 
-        /* CSS Guard: Automatically hides admin controls in User mode */
         html.user-mode .admin-only { display: none !important; }
 
         .header { display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 20px 24px; border-radius: 12px; border: 1px solid var(--border); }
-        .user-badge { background: #f1f5f9; padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; border: 1px solid var(--border); }
+        .user-badge { background: var(--bg); padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; border: 1px solid var(--border); color: var(--text); }
         .role-tag { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-left: 6px; }
         .role-admin { background: #fef3c7; color: #92400e; }
         .role-employee { background: #e0f2fe; color: #075985; }
+
+        .theme-toggle-btn {
+            background: var(--surface);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
 
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
         .stat-card { background: var(--surface); padding: 20px; border-radius: 12px; border: 1px solid var(--border); }
         .stat-card p { font-size: 13px; color: var(--muted); font-weight: 500; text-transform: uppercase; }
         .stat-card h3 { font-size: 26px; font-weight: 700; margin-top: 8px; }
 
-        /* Toolbar & Controls */
         .toolbar { display: flex; flex-direction: column; gap: 14px; background: var(--surface); padding: 16px 24px; border-radius: 12px; border: 1px solid var(--border); }
         .filter-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
         .search-filter { display: flex; gap: 10px; flex: 1; flex-wrap: wrap; }
 
-        input, select { padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; background: #fff; }
+        input, select { padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; background: var(--input-bg); color: var(--text); }
         input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
         .num-input { width: 130px; }
 
         .btn-primary { background: var(--primary); color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; }
         .btn-export { background: #059669; color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; }
-        .btn-secondary { background: #f1f5f9; color: var(--text); border: 1px solid var(--border); padding: 8px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; }
-        .btn-reset { background: #e2e8f0; color: #334155; border: none; padding: 10px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px; }
-        .btn-reset:hover { background: #cbd5e1; }
+        .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); padding: 8px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        .btn-reset { background: var(--border); color: var(--text); border: none; padding: 10px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px; }
 
-        .table-container { background: var(--surface); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
+        .table-container { background: var(--surface); border-radius: 12px 12px 0 0; border: 1px solid var(--border); border-bottom: none; overflow: hidden; }
         table { width: 100%; border-collapse: collapse; text-align: left; }
-        th { background: #f8fafc; padding: 14px 20px; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; border-bottom: 1px solid var(--border); user-select: none; }
-        th.sortable { cursor: pointer; transition: background 0.2s; }
-        th.sortable:hover { background: #f1f5f9; color: var(--primary); }
+        th { background: var(--table-header); padding: 14px 20px; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; border-bottom: 1px solid var(--border); }
         td { padding: 16px 20px; font-size: 14px; border-bottom: 1px solid var(--border); }
 
         .dept-tag { padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; background: #e0e7ff; color: #3730a3; }
-        .emp-avatar { width: 32px; height: 32px; border-radius: 50%; background: #e2e8f0; color: #475569; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; margin-right: 10px; }
+        .emp-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--border); color: var(--text); display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; margin-right: 10px; }
+
+        /* 2. 🔗 Clickable Employee Link Style */
+        .emp-link { text-decoration: none; color: var(--text); font-weight: 700; transition: color 0.2s; }
+        .emp-link:hover { color: var(--primary); text-decoration: underline; }
 
         .btn-edit { background: transparent; color: var(--primary); border: 1px solid #c7d2fe; padding: 6px 12px; border-radius: 6px; cursor: pointer; margin-right: 6px; }
         .btn-danger { background: transparent; color: var(--danger); border: 1px solid #fca5a5; padding: 6px 12px; border-radius: 6px; cursor: pointer; }
+
+        /* 3. 📄 Pagination Bar Style */
+        .pagination-bar { display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 12px 20px; border-radius: 0 0 12px 12px; border: 1px solid var(--border); font-size: 14px; }
 
         .modal-overlay { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(15, 23, 42, 0.4); display: none; align-items: center; justify-content: center; }
         .modal { background: var(--surface); padding: 28px; border-radius: 16px; width: 100%; max-width: 500px; }
@@ -79,7 +113,6 @@
     </style>
 </head>
 <body>
-<h1 style="color: red; font-size: 50px;">TEST 123</h1>
 
 <div class="app-container">
 
@@ -87,17 +120,17 @@
         <h1>Employee Operations Center</h1>
         <div style="display:flex; align-items:center; gap:12px;">
             <span id="userInfo" class="user-badge">👤 Loading...</span>
+            <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeBtn">🌙 Dark</button>
             <button class="btn-secondary" onclick="logout()">🔒 Logout</button>
         </div>
     </div>
 
-    <!-- Stats Row -->
     <div class="stats-grid">
         <div class="stat-card">
             <p>Total Headcount</p>
             <h3 id="statTotal">0</h3>
         </div>
-        <div class="stat-card admin-only" id="statPayrollCard">
+        <div class="stat-card" id="statPayrollCard">
             <p>Total Monthly Payroll</p>
             <h3 id="statPayroll">₹0</h3>
         </div>
@@ -107,7 +140,6 @@
         </div>
     </div>
 
-    <!-- Analytics Charts Section -->
     <div class="stats-grid" style="margin-top: 10px;">
         <div class="stat-card">
             <p style="margin-bottom: 12px;">Headcount by Department</p>
@@ -119,11 +151,10 @@
         </div>
     </div>
 
-    <!-- Advanced Toolbar Controls -->
     <div class="toolbar">
         <div class="filter-row">
             <div class="search-filter">
-                <input type="text" id="searchInput" placeholder="Search name, code, designation..." oninput="filterData()" style="min-width: 220px;">
+                <input type="text" id="searchInput" placeholder="Search name, code, designation..." oninput="filterData()" autocomplete="off" style="min-width: 220px;">
                 <select id="deptFilter" onchange="filterData()">
                     <option value="">All Departments</option>
                 </select>
@@ -145,38 +176,56 @@
         </div>
     </div>
 
-    <!-- Data Table -->
-    <div class="table-container">
-        <table>
-            <thead>
-            <tr id="tableHeaderRow">
-                <th class="sortable" onclick="sortByHeader('name')">Employee <span id="sort-name">↕</span></th>
-                <th class="sortable" onclick="sortByHeader('code')">Code <span id="sort-code">↕</span></th>
-                <th>Email</th>
-                <th class="sortable" onclick="sortByHeader('department')">Department <span id="sort-department">↕</span></th>
-                <th class="sortable" onclick="sortByHeader('designation')">Designation <span id="sort-designation">↕</span></th>
-                <th class="sortable" onclick="sortByHeader('salary')">Salary <span id="sort-salary">↕</span></th>
-                <th id="actionHeader" class="admin-only">Actions</th>
-            </tr>
-            </thead>
-            <tbody id="empTable"></tbody>
-        </table>
+    <div>
+        <div class="table-container">
+            <table>
+                <thead>
+                <tr id="tableHeaderRow">
+                    <th class="sortable" onclick="sortByHeader('name')">Employee <span id="sort-name">↕</span></th>
+                    <th class="sortable" onclick="sortByHeader('code')">Code <span id="sort-code">↕</span></th>
+                    <th>Email</th>
+                    <th class="sortable" onclick="sortByHeader('department')">Department <span id="sort-department">↕</span></th>
+                    <th class="sortable" onclick="sortByHeader('designation')">Designation <span id="sort-designation">↕</span></th>
+                    <th class="sortable" onclick="sortByHeader('salary')">Salary <span id="sort-salary">↕</span></th>
+                    <th id="actionHeader" class="admin-only">Actions</th>
+                </tr>
+                </thead>
+                <tbody id="empTable"></tbody>
+            </table>
+        </div>
+
+        <!-- 3. 📄 Pagination Bar Component -->
+        <div class="pagination-bar">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span>Rows per page:</span>
+                <select id="pageSizeSelect" onchange="changePageSize()" style="padding: 4px 8px;">
+                    <option value="5">5</option>
+                    <option value="10" selected>10</option>
+                    <option value="20">20</option>
+                </select>
+                <span id="pageRangeInfo" style="color: var(--muted); margin-left: 10px;">Showing 0-0 of 0</span>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <button id="prevPageBtn" class="btn-secondary" onclick="changePage(-1)">❮ Prev</button>
+                <span id="currentPageBadge" style="font-weight: 600; padding: 4px 10px; background: #e0e7ff; color: #3730a3; border-radius: 6px;">Page 1</span>
+                <button id="nextPageBtn" class="btn-secondary" onclick="changePage(1)">Next ❯</button>
+            </div>
+        </div>
     </div>
 
 </div>
 
-<!-- Modal Form -->
 <div class="modal-overlay" id="addModal">
     <div class="modal">
         <h3 id="modalTitle">Add New Employee</h3>
         <form class="modal-form" id="empForm">
             <input type="hidden" id="empId">
-            <input type="text" id="code" placeholder="Employee Code" required>
-            <input type="text" id="name" placeholder="Full Name" required>
-            <input type="email" id="email" placeholder="Email Address" required>
-            <input type="text" id="department" placeholder="Department" required>
-            <input type="text" id="designation" placeholder="Designation" required>
-            <input type="number" id="salary" placeholder="Salary (₹)" required>
+            <input type="text" id="code" placeholder="Employee Code" autocomplete="off" required>
+            <input type="text" id="name" placeholder="Full Name" autocomplete="name" required>
+            <input type="email" id="email" placeholder="Email Address" autocomplete="email" required>
+            <input type="text" id="department" placeholder="Department" autocomplete="off" required>
+            <input type="text" id="designation" placeholder="Designation" autocomplete="off" required>
+            <input type="number" id="salary" placeholder="Salary (₹)" autocomplete="off" required>
             <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
                 <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
                 <button type="submit" class="btn-primary" id="submitBtn">Save</button>
@@ -192,6 +241,10 @@
     const API_URL = 'http://localhost:5000/api/employees';
     let allEmployees = [];
 
+    let currentPage = 1;
+    let pageSize = 10;
+    let currentFilteredData = [];
+
     let headcountChartInstance = null;
     let salaryChartInstance = null;
     let currentSortState = { field: 'name', dir: 'asc' };
@@ -201,8 +254,26 @@
         const roleClass = isAdmin ? 'role-admin' : 'role-employee';
         userInfo.innerHTML = `👤 <b>${username}</b> <span class="role-tag ${roleClass}">${isAdmin ? 'ADMIN' : 'EMPLOYEE'}</span>`;
 
+        const savedTheme = localStorage.getItem('appTheme') || 'light';
+        applyTheme(savedTheme);
+
         loadEmployees();
     });
+
+    function toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        applyTheme(newTheme);
+    }
+
+    function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('appTheme', theme);
+        const themeBtn = document.getElementById('themeBtn');
+        if (themeBtn) {
+            themeBtn.innerHTML = theme === 'dark' ? '☀️ Light' : '🌙 Dark';
+        }
+    }
 
     function logout() {
         localStorage.clear();
@@ -244,7 +315,6 @@
         select.value = currentSelection;
     }
 
-    // 🔍 Advanced Multi-Filter + Sorting Core
     function filterData() {
         const searchTerm = (document.getElementById('searchInput').value || '').toLowerCase();
         const selectedDept = document.getElementById('deptFilter').value;
@@ -252,7 +322,6 @@
         const maxSal = Number(document.getElementById('maxSalary').value) || Infinity;
         const sortVal = document.getElementById('sortFilter').value;
 
-        // 1. Filtering
         let filtered = allEmployees.filter(emp => {
             const matchSearch = (emp.name || '').toLowerCase().includes(searchTerm) ||
                 (emp.code || '').toLowerCase().includes(searchTerm) ||
@@ -266,7 +335,6 @@
             return matchSearch && matchDept && matchSalary;
         });
 
-        // 2. Sorting
         const [field, dir] = sortVal.split('-');
         currentSortState = { field, dir };
         updateSortIcons(field, dir);
@@ -288,9 +356,45 @@
             return 0;
         });
 
+        currentFilteredData = filtered;
+        currentPage = 1;
+
         renderStats(filtered);
-        renderTable(filtered);
         renderCharts(filtered);
+        updatePaginatedTable();
+    }
+
+    function updatePaginatedTable() {
+        const totalRecords = currentFilteredData.length;
+        const totalPages = Math.ceil(totalRecords / pageSize) || 1;
+
+        if (currentPage > totalPages) currentPage = totalPages;
+        if (currentPage < 1) currentPage = 1;
+
+        const startIndex = (currentPage - 1) * pageSize;
+        const endIndex = Math.min(startIndex + pageSize, totalRecords);
+        const paginatedSlice = currentFilteredData.slice(startIndex, endIndex);
+
+        renderTable(paginatedSlice);
+
+        document.getElementById('pageRangeInfo').innerText = totalRecords > 0
+            ? `Showing ${startIndex + 1}-${endIndex} of ${totalRecords}`
+            : 'Showing 0-0 of 0';
+
+        document.getElementById('currentPageBadge').innerText = `Page ${currentPage} of ${totalPages}`;
+        document.getElementById('prevPageBtn').disabled = (currentPage === 1);
+        document.getElementById('nextPageBtn').disabled = (currentPage === totalPages || totalPages === 0);
+    }
+
+    function changePage(delta) {
+        currentPage += delta;
+        updatePaginatedTable();
+    }
+
+    function changePageSize() {
+        pageSize = Number(document.getElementById('pageSizeSelect').value);
+        currentPage = 1;
+        updatePaginatedTable();
     }
 
     function sortByHeader(field) {
@@ -324,7 +428,6 @@
         filterData();
     }
 
-    // 📊 Chart.js Renderer
     function renderCharts(data) {
         if (!data) return;
 
@@ -407,7 +510,9 @@
                     <td>
                         <div style="display:flex; align-items:center;">
                             <div class="emp-avatar">${initials}</div>
-                            <strong>${emp.name}</strong>
+                            <a href="profile.html?id=${emp._id}" class="emp-link" title="Click to view full profile">
+                                ${emp.name} 🔗
+                            </a>
                         </div>
                     </td>
                     <td><code>${emp.code}</code></td>

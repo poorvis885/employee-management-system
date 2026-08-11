@@ -13,6 +13,10 @@ app.use(express.json());
 // Safely define Spring Boot static resources path if it exists
 const springStaticPath = path.join(__dirname, 'src', 'main', 'resources', 'static');
 
+// Express ko bolo ki jab bhi '/' load ho, 'employee-backend' folder ki index.html hi bheje
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
 // Serve static files (HTML, CSS, JS) from root and static folders
 app.use(express.static(__dirname));
 if (fs.existsSync(springStaticPath)) {
@@ -161,6 +165,61 @@ app.delete('/api/employees/:id', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+// Pagination State
+let currentPage = 1;
+let pageSize = 10;
+let currentFilteredData = [];
+function filterData() {
+    const searchTerm = (document.getElementById('searchInput').value || '').toLowerCase();
+    const selectedDept = document.getElementById('deptFilter').value;
+    const minSal = Number(document.getElementById('minSalary').value) || 0;
+    const maxSal = Number(document.getElementById('maxSalary').value) || Infinity;
+    const sortVal = document.getElementById('sortFilter').value;
+
+    // 1. Filtering
+    let filtered = allEmployees.filter(emp => {
+        const matchSearch = (emp.name || '').toLowerCase().includes(searchTerm) ||
+            (emp.code || '').toLowerCase().includes(searchTerm) ||
+            (emp.designation || '').toLowerCase().includes(searchTerm) ||
+            (emp.email || '').toLowerCase().includes(searchTerm);
+
+        const matchDept = selectedDept === '' || emp.department === selectedDept;
+        const sal = Number(emp.salary) || 0;
+        const matchSalary = sal >= minSal && sal <= maxSal;
+
+        return matchSearch && matchDept && matchSalary;
+    });
+
+    // 2. Sorting
+    const [field, dir] = sortVal.split('-');
+    currentSortState = { field, dir };
+    updateSortIcons(field, dir);
+
+    filtered.sort((a, b) => {
+        let valA = a[field] ?? '';
+        let valB = b[field] ?? '';
+
+        if (field === 'salary') {
+            valA = Number(valA) || 0;
+            valB = Number(valB) || 0;
+        } else {
+            valA = valA.toString().toLowerCase();
+            valB = valB.toString().toLowerCase();
+        }
+
+        if (valA < valB) return dir === 'asc' ? -1 : 1;
+        if (valA > valB) return dir === 'asc' ? 1 : -1;
+        return 0;
+    });
+
+    // Store global reference & reset to page 1 on filter change
+    currentFilteredData = filtered;
+    currentPage = 1;
+
+    renderStats(filtered);
+    renderCharts(filtered);
+    updatePaginatedTable();
+}
 
 // Start Server
 const PORT = process.env.PORT || 5000;
