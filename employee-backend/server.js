@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const Datastore = require('nedb-promises');
 
+
 const app = express();
 
 // Middlewares
@@ -221,8 +222,9 @@ function filterData() {
     updatePaginatedTable();
 }
 
-// Start Server
+// Render environment port support (Default: 5000)
 const PORT = process.env.PORT || 5000;
+
 app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
